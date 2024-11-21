@@ -25,7 +25,7 @@ passport.use(
       }
 
       // Obtém o salt armazenado no banco de dados para o usuário
-      const saltBuffer = user.salt.saltBuffer
+      const saltBuffer = user.salt.buffer
 
       // Recalcula a senha usando o mesmo salt e algoritmo para comparação
       crypto.pbkdf2(password, saltBuffer, 310000, 16, 'sha256', (err, hashedPassword) => {
@@ -35,7 +35,7 @@ passport.use(
         }
 
         // Compara a senha armazenada no banco com a senha gerada
-        const userPasswordBuffer = Buffer.from(user.password.Buffer)
+        const userPasswordBuffer = Buffer.from(user.password.buffer)
 
         if (!crypto.timingSafeEqual(userPasswordBuffer, hashedPassword)) {
           // Senha não confere, retorna falso
@@ -116,6 +116,47 @@ authRouter.post('/signup', async (req, res) => {
     }
   })
 })
+
+// Define a rota POST para "/login" dentro do authRouter
+authRouter.post('/login', (req, res) => {
+    // Utiliza o Passport para autenticar o usuário com a estratégia 'local'
+    passport.authenticate('local', (error, user) => {
+        // Se ocorrer um erro no processo de autenticação, retorna uma resposta com erro
+        if (error) {
+            return res.status(500).send({
+                success: false, // Indica falha na autenticação
+                statusCode: 500, // Código de status HTTP de erro interno
+                body: {
+                    text: 'Error during authentication', // Mensagem de erro
+                    error // Informação do erro para depuração
+                }
+            });
+        }
+
+        // Se o usuário não for encontrado, retorna uma resposta informando o problema
+        if (!user) {
+            return res.status(400).send({
+                success: false, // Indica que a autenticação falhou
+                statusCode: 400, // Código de status HTTP de erro de cliente
+                body: {
+                    text: 'User not found', // Mensagem indicando que o usuário não foi encontrado
+                }
+            });
+        }
+
+        // Se a autenticação for bem-sucedida, gera um token JWT para o usuário
+        const token = jwt.sign(user, 'secret'); // 'secret' é a chave de assinatura do token
+        return res.status(200).send({
+            success: true, // Indica que a autenticação foi bem-sucedida
+            statusCode: 200, // Código de status HTTP de sucesso
+            body: {
+                text: 'User logged in correctly', // Mensagem de sucesso
+                user, // Dados do usuário autenticado (exceto senha/salt)
+                token // Token gerado para autenticação futura
+            }
+        });
+    })(req, res); // Executa o middleware de autenticação passando os objetos de requisição e resposta
+});
 
 // Exporta o roteador para ser usado em outros arquivos
 export default authRouter
