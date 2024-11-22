@@ -4,6 +4,7 @@ import cors from 'cors' // Middleware para habilitar o CORS (Cross-Origin Resour
 import { Mongo } from './database/mongo.js' // Importa o gerenciador de conexão com o MongoDB
 import { config } from 'dotenv' // Biblioteca para carregar variáveis de ambiente de um arquivo `.env`
 import authRouter from './auth/auth.js' // Importa o roteador de autenticação
+import usersRouter from './routes/users.js'
 
 // Carrega as variáveis de ambiente do arquivo `.env` para `process.env`
 config()
@@ -41,8 +42,9 @@ async function main() {
     })
   })
 
-  // Configura o roteador de autenticação para rotas que começam com `/auth`
+  // Configura o roteador de autenticação para rotas que começam com `/auth` e `users`
   app.use('/auth', authRouter)
+  app.use('/users', usersRouter)
 
   // Inicia o servidor na porta especificada e exibe uma mensagem no console
   app.listen(port, () => {

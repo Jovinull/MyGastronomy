@@ -139,7 +139,7 @@ authRouter.post('/login', (req, res) => {
                 success: false, // Indica que a autenticação falhou
                 statusCode: 400, // Código de status HTTP de erro de cliente
                 body: {
-                    text: 'User not found', // Mensagem indicando que o usuário não foi encontrado
+                    text: 'Credentials are not correct', // Mensagem indicando que o usuário não foi encontrado
                 }
             });
         }
